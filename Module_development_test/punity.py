@@ -1,26 +1,40 @@
-
+from dataclasses import dataclass
 
 import pygame
 from pygame.transform import scale
 
 
-### CLASSES ###
+###------------ CLASSES ------------------ ###
 
-# GameObject Class
-class GameObject:
-    def __init__(self, transform: "Transform2D", sprite: "Sprite" = None):
+### CALCULATION CLASSES ###
+@dataclass
+class Vector2D:
+        x: float
+        y: float
+        def __add__(self, other):
+            # Vector + Vector
+            if isinstance(other, Vector2D):
+                return Vector2D(self.x + other.x, self.y + other.y)
+        def __sub__(self, other):
+            # Vector - Vector
+            if isinstance(other, Vector2D):
+                return Vector2D(self.x - other.x, self.y - other.y)
+        def __mul__(self, other):
+            if isinstance(other, (int, float)):
+                # Vector * Number
+                return Vector2D(self.x * other, self.y * other)
+        def __truediv__(self, other):
+            # Vector / Number
+            if isinstance(other, (int, float)):
+                return Vector2D(self.x / other, self.y / other)
 
-        print("GameObject has been created")
-
-        self.transform = transform
-        self.sprite = sprite
+### GAMEOBJECT AND COMPONENTS ###
 
 # Vector Class
 class Transform2D:
-    def __init__(self,x_position : float = 0 ,y_position: float = 0,
+    def __init__(self, position : Vector2D = Vector2D(0,0),
                  rotation: float = 0, x_scale: float = 1, y_scale: float = 1 ):
-        self.x_position = x_position
-        self.y_position = y_position
+        self.position = position
         self.rotation = rotation
         self.x_scale = x_scale
         self.y_scale = y_scale
@@ -39,6 +53,55 @@ class Sprite:
                 self.surface = pygame.image.load(self.image_path)
         self.original_surface = self.surface
 
+# Ridigbody
+class Ridigbody:
+    def __init__(self, mass : float = 10):
+        self.mass = mass
+        self.acceleration = Vector2D(0,0)
+        self.velocity = Vector2D(0,0)
+        self.force = Vector2D(0,0)
+
+    def add_force(self, force_direction : Vector2D) -> None:
+        """Apply force to along the direction of force_direction """
+        self.force += force_direction
+    def update(self):
+        self.acceleration = self.force / self.mass
+        self.velocity = self.acceleration
+
+        #Reset force
+        self.force = Vector2D(0,0)
+
+    def debug_velocity_force(self):
+        print(f"Velocity: {self.velocity} Force: {self.force}")
+
+# GameObject Class
+class GameObject:
+    def __init__(self, transform: "Transform2D", sprite: "Sprite" = None, ridigbody : Ridigbody = None):
+
+        print("GameObject has been created")
+
+        self.transform = transform
+        self.sprite = sprite
+        self.ridigbody = ridigbody
+    def physics_update(self):
+        self.transform.position += self.ridigbody.velocity
+        self.ridigbody.update()
+
+
+### MANAGER CLASSES ###
+
+class Input_Manger:
+    @staticmethod
+    def get_key_down( key : int) -> bool:
+        """
+        returns True if a key is pressed.
+
+        Args:
+            key: the key that should be checked if pressed -> int or pygame.K_[keycode]
+        """
+        return pygame.key.get_pressed()[key]
+
+
 
 # Object in a Scene List
 objects_in_scene = [] # List of all GameObject that exist in the Scene
@@ -56,7 +119,7 @@ def render_objects(objects : list, screen: pygame.surface.Surface):
         # Scale the object
         obj = scale_obj(obj)
         # Draw the Object on the screen
-        screen.blit(obj.sprite.surface, (obj.transform.x_position, obj.transform.y_position))
+        screen.blit(obj.sprite.surface, (obj.transform.position.x, obj.transform.position.y))
 
 def scale_obj(obj: GameObject):
     """Scales the Object by the scale of the transform-scale variables"""
