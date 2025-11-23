@@ -1,4 +1,6 @@
 import pygame
+from pygame.transform import scale
+
 import punity
 from Module_development_test.punity import Transform2D, Sprite, Input_Manger, Vector2D, Ridigbody
 
@@ -8,15 +10,23 @@ running = True
 
 # Pictures
 player_img_path = "C:/Domenik/Programming2/python-Projects/PyGameTest/Module_development_test/test_pictures/ball.png"
+grass_img_path = "C:/Domenik/Programming2/python-Projects/PyGameTest/Module_development_test/test_pictures/grass_sprite.png"
+
 
 loaded_img = pygame.image.load(player_img_path)
 # Create a GameObject
 player = punity.GameObject(
                 Transform2D(Vector2D(20,30),30, x_scale=0.2, y_scale=0.2),
                 Sprite(image_path=player_img_path,layer=1),
-                Ridigbody()
+                Ridigbody(mass= 0.01, gravity= True)
                 )
+grass_box = punity.GameObject(
+    Transform2D(Vector2D(0,600), x_scale=5, y_scale=1),
+    Sprite(image_path=grass_img_path,layer=1),
+)
+
 punity.add_to_rendering(player)
+punity.add_to_rendering(grass_box)
 
 # For player Movement
 speed = 3
@@ -26,6 +36,7 @@ def player_movement():
     player.ridigbody.add_force(Vector2D(speed * direction,0))
     player.ridigbody.update()
     player.physics_update()
+
 
 
 

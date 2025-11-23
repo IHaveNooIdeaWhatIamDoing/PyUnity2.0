@@ -3,6 +3,15 @@ from dataclasses import dataclass
 import pygame
 from pygame.transform import scale
 
+from First_test.test_script import delta_time
+
+###------------ CONSTANTS ------------------ ###
+global const_earth_acceleration
+const_earth_acceleration = 9.81
+
+### Settings ###
+global refresh_rate
+refresh_rate = 120
 
 ###------------ CLASSES ------------------ ###
 
@@ -27,6 +36,8 @@ class Vector2D:
             # Vector / Number
             if isinstance(other, (int, float)):
                 return Vector2D(self.x / other, self.y / other)
+
+
 
 ### GAMEOBJECT AND COMPONENTS ###
 
@@ -55,7 +66,7 @@ class Sprite:
 
 # Ridigbody
 class Ridigbody:
-    def __init__(self, mass : float = 10):
+    def __init__(self, mass : float = 10, gravity: bool = False):
         self.mass = mass
         self.acceleration = Vector2D(0,0)
         self.velocity = Vector2D(0,0)
@@ -64,15 +75,29 @@ class Ridigbody:
     def add_force(self, force_direction : Vector2D) -> None:
         """Apply force to along the direction of force_direction """
         self.force += force_direction
+
+    def gravity(self):
+        self.add_force(Vector2D(0,const_earth_acceleration*self.mass * DeltaTime.get_delta_time()))
+
+
     def update(self):
+        if self.gravity:
+            self.gravity()
+        # a = F/m
         self.acceleration = self.force / self.mass
-        self.velocity = self.acceleration
+        self.velocity += self.acceleration
 
         #Reset force
         self.force = Vector2D(0,0)
 
-    def debug_velocity_force(self):
-        print(f"Velocity: {self.velocity} Force: {self.force}")
+# Collider
+    class Collider:
+        class BoxCollider:
+            def __init__(self, offset: Vector2D, scale: Vector2D):
+                self.offset = offset
+                self.scale = scale
+            def check_for_collision(self,type ):
+
 
 # GameObject Class
 class GameObject:
@@ -83,6 +108,7 @@ class GameObject:
         self.transform = transform
         self.sprite = sprite
         self.ridigbody = ridigbody
+
     def physics_update(self):
         self.transform.position += self.ridigbody.velocity
         self.ridigbody.update()
@@ -100,6 +126,15 @@ class Input_Manger:
             key: the key that should be checked if pressed -> int or pygame.K_[keycode]
         """
         return pygame.key.get_pressed()[key]
+
+class DeltaTime:
+    @staticmethod
+    def get_delta_time() -> float:
+        """Returns the delta_time depending on the refresh_rate"""
+        clock = pygame.time.Clock()
+        delta_time = clock.tick(refresh_rate)
+        delta_time = max(0.001,min(0.1,delta_time))
+        return delta_time
 
 
 
@@ -150,13 +185,13 @@ def test_transform():
     print("Start Test:")
     player = GameObject(Transform2D(0,0), Sprite("assets/player.png"))
     print_object_position(player, "player")
-    player.transform.x_position += 10
+    player.transform.position.x += 10
     print_object_position(player, "player")
 
 
 
 def print_object_position(obj : GameObject, name: str):
-    print(f"{name} | pos: {obj.transform.x_position, obj.transform.y_position} ")
+    print(f"{name} | pos: {obj.transform.position.x, obj.transform.position.y} ")
 
 def main(screen: pygame.surface.Surface):
     rendering(screen)
