@@ -96,7 +96,7 @@ class Ridigbody:
             def __init__(self, offset: Vector2D, scale: Vector2D):
                 self.offset = offset
                 self.scale = scale
-            def check_for_collision(self,type ):
+            #def check_for_collision(self,type ):
 
 
 # GameObject Class
@@ -116,7 +116,7 @@ class GameObject:
 
 ### MANAGER CLASSES ###
 
-class Input_Manger:
+class InputManger:
     @staticmethod
     def get_key_down( key : int) -> bool:
         """
@@ -126,6 +126,7 @@ class Input_Manger:
             key: the key that should be checked if pressed -> int or pygame.K_[keycode]
         """
         return pygame.key.get_pressed()[key]
+
 
 class DeltaTime:
     @staticmethod

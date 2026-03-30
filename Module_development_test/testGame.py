@@ -2,7 +2,7 @@ import pygame
 from pygame.transform import scale
 
 import punity
-from Module_development_test.punity import Transform2D, Sprite, Input_Manger, Vector2D, Ridigbody
+from Module_development_test.punity import Transform2D, Sprite, InputManger, Vector2D, Ridigbody
 
 pygame.init()
 screen = pygame.display.set_mode((1080, 720))
@@ -29,11 +29,14 @@ punity.add_to_rendering(player)
 punity.add_to_rendering(grass_box)
 
 # For player Movement
-speed = 3
+speed = 0.01
+jump_force = 0.01
 
 def player_movement():
     direction = manage_input()
     player.ridigbody.add_force(Vector2D(speed * direction,0))
+    player.ridigbody.add_force(Vector2D(0,jump_force))
+    print(player.transform.position)
     player.ridigbody.update()
     player.physics_update()
 
@@ -42,8 +45,9 @@ def player_movement():
 
 def manage_input() -> int:
     direction = 0
-    right = int(Input_Manger.get_key_down(key = pygame.K_d))
-    left = int(Input_Manger.get_key_down(key = pygame.K_a))
+    right = int(InputManger.get_key_down(key = pygame.K_d))
+    left = int(InputManger.get_key_down(key = pygame.K_a))
+
     if right:
         direction = 1
         if left:
